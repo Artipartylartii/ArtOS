@@ -5,7 +5,7 @@ SECTIONS
 {
     . = 0x100000;
     
-    .multiboot : {
+    .multiboot : AT(0) {
         KEEP(*(.multiboot))
     }
     
