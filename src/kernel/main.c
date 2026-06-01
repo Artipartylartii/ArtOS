@@ -1,22 +1,18 @@
-#include "stdint.h"
-#include "vga.h"
+#include <kernel.h>
+#include <vga.h>
 
-extern void gdt_init(void);
-extern void idt_init(void);
+extern void gdt_flush();
+extern void idt_flush();
 
-void kernel_main(void) {
-    vga_init();
-    vga_write_string(0, 0, "PolyOS x86_64 Kernel", 0x0F);
-    vga_write_string(0, 1, "======================", 0x0F);
+void kernel_main() {
+    volatile char *vga = (volatile char *)0xB8000;
+    const char *msg = "PolyOS booted!";
+    for (int i = 0; msg[i]; i++) {
+        vga[i*2] = msg[i];
+        vga[i*2+1] = 0x07;
+    }
     
-    gdt_init();
-    idt_init();
-    
-    __asm__ volatile ("sti");
-    
-    vga_write_string(0, 3, "GDT/IDT loaded!", 0x0A);
-    vga_write_string(0, 5, "Hello World!", 0x0B);
-    vga_write_string(0, 7, "System ready.", 0x0C);
-    
-    for (;;) __asm__ volatile ("hlt");
+    for (;;) {
+        __asm__ volatile ("hlt");
+    }
 }

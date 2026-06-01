@@ -1,13 +1,15 @@
 section .multiboot
 align 8
+
 multiboot_start:
 dd 0xE85250D6
 dd 0
-dd multiboot_end - $$
-dd -((multiboot_end - $$) + 0xE85250D6)
+dd 24
+dd -0xE85250D6 - 0 - 24
 dw 0
 dw 0
 dd 8
+
 multiboot_end:
 
 section .text
