@@ -1,16 +1,15 @@
-.section .text
-.global gdt_flush
+.text
+.globl gdt_flush
+.type gdt_flush, @function
 gdt_flush:
-    lgdt gdt_ptr
-    movw $0x10, %ax
-    movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
-    movw %ax, %ss
+    mov 0x10(%esp), %eax
+    lgdt (%eax)
+    mov $0x10, %ax
+    mov %ax, %ds
+    mov %ax, %es
+    mov %ax, %fs
+    mov %ax, %gs
+    mov %ax, %ss
+    jmp $0x08, $.flush
+.flush:
     ret
-
-.section .data
-.global gdt_ptr
-gdt_ptr:
-    .space 16

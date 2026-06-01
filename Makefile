@@ -1,14 +1,13 @@
-# Makefile for PolyOS
-
+# Makefile for PolyOS (32-bit)
 TARGET = polyos
 ISDIR = build
 
 CC = gcc
 AS = nasm
-LD = x86_64-linux-gnu-ld
+LD = ld
 
-CFLAGS = -std=gnu99 -Wall -O2 -ffreestanding -nostdinc -m64 -mno-red-zone -fno-common -fno-stack-protector
-LDFLAGS = -T linker.ld -nostdlib -m elf_x86_64
+CFLAGS = -std=gnu99 -Wall -O2 -ffreestanding -nostdinc -m32 -fno-pie -fno-stack-protector
+LDFLAGS = -T linker.ld -nostdlib -m elf_i386
 INCLUDES = -I include
 
 ISO_DIR = $(ISDIR)/iso
@@ -24,9 +23,8 @@ all: create_dirs $(ISDIR)/$(TARGET).elf
 create_dirs:
 	mkdir -p build/boot build/kernel build/iso/boot/grub
 
-# Implicit rules for building objects (depends on create_dirs)
 build/boot/%.o: src/boot/%.asm | create_dirs
-	$(AS) -f elf64 -o $@ $<
+	$(AS) -f elf32 -o $@ $<
 
 build/boot/%.o: src/boot/%.S | create_dirs
 	$(CC) $(CFLAGS) $(INCLUDES) -x assembler-with-cpp -c -o $@ $<
@@ -47,9 +45,6 @@ iso: $(ISDIR)/$(TARGET).elf | create_dirs
 	echo '}' >> $(ISO_DIR)/boot/grub/grub.cfg
 	cp $(ISDIR)/$(TARGET).elf $(ISO_DIR)/boot/
 	grub-mkrescue -o $(ISO_FILE) $(ISO_DIR)
-
-qemu: iso
-	qemu-system-x86_64 -cdrom $(ISDIR)/$(TARGET).iso -serial stdio -no-reboot -m 256M
 
 clean:
 	rm -rf $(ISDIR)

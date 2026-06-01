@@ -2,7 +2,6 @@ section .multiboot
 align 4
 
 multiboot_start:
-; Multiboot1 header (requires alignment at offset 8 from page start)
 dd 0x1BADB002           ; magic
 dd 0x00010003           ; flags (align, mem info)
 dd -((0x1BADB002) + (0x00010003))  ; checksum
@@ -15,7 +14,7 @@ dd _start               ; entry_addr
 section .text
 global _start
 _start:
-    mov rsp, stack_top
+    mov esp, stack_top
     cli
     extern kernel_main
     call kernel_main

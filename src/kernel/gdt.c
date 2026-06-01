@@ -1,35 +1,42 @@
-#include "stdint.h"
+#include <kernel.h>
 
-extern void gdt_flush(void);
+struct gdt_entry {
+    unsigned short limit_low;
+    unsigned short base_low;
+    unsigned char base_mid;
+    unsigned char access;
+    unsigned char granularity;
+    unsigned char base_high;
+} __attribute__((packed));
 
-typedef struct {
-    uint16_t limit_low;
-    uint16_t base_low;
-    uint8_t base_mid;
-    uint8_t access;
-    uint8_t flags;
-    uint8_t base_high;
-} __attribute__((packed)) gdt_entry_t;
+struct gdt_ptr {
+    unsigned short limit;
+    unsigned int base;
+} __attribute__((packed));
 
-typedef struct {
-    uint16_t limit;
-    uint64_t base;
-} __attribute__((packed)) gdt_pointer_t;
+struct gdt_entry gdt[5];
+struct gdt_ptr gp;
 
-static gdt_entry_t gdt[6];
-static gdt_pointer_t gdt_ptr;
+extern void gdt_flush();
 
-void gdt_init(void) {
-    gdt[0] = (gdt_entry_t){0, 0, 0, 0, 0, 0};
-    
-    uint32_t base = 0;
-    uint32_t limit = 0xFFFFF;
-    
-    gdt[1] = (gdt_entry_t){limit & 0xFFFF, base & 0xFFFF, (base >> 16) & 0xFF, 0x9A, 0xA0, (base >> 24) & 0xFF};
-    gdt[2] = (gdt_entry_t){limit & 0xFFFF, base & 0xFFFF, (base >> 16) & 0xFF, 0x92, 0xC0, (base >> 24) & 0xFF};
-    
-    gdt_ptr.limit = sizeof(gdt) - 1;
-    gdt_ptr.base = (uint64_t)&gdt;
-    
+void gdt_set_gate(int num, unsigned long base, unsigned long limit, unsigned char access, unsigned char gran) {
+    gdt[num].base_low = (base & 0xFFFF);
+    gdt[num].base_mid = (base >> 16) & 0xFF;
+    gdt[num].base_high = (base >> 24) & 0xFF;
+    gdt[num].limit_low = (limit & 0xFFFF);
+    gdt[num].granularity = ((limit >> 16) & 0x0F) | (gran & 0xF0);
+    gdt[num].access = access;
+}
+
+void gdt_install() {
+    gp.limit = (sizeof(struct gdt_entry) * 5) - 1;
+    gp.base = (unsigned int)&gdt;
+
+    gdt_set_gate(0, 0, 0, 0, 0);
+    gdt_set_gate(1, 0, 0xFFFFFFFF, 0x9A, 0xCF);
+    gdt_set_gate(2, 0, 0xFFFFFFFF, 0x92, 0xCF);
+    gdt_set_gate(3, 0, 0xFFFFFFFF, 0xFA, 0xCF);
+    gdt_set_gate(4, 0, 0xFFFFFFFF, 0xF2, 0xCF);
+
     gdt_flush();
 }

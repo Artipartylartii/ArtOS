@@ -1,10 +1,7 @@
-.section .text
-.global idt_flush
+.text
+.globl idt_flush
+.type idt_flush, @function
 idt_flush:
-    lidt idt_ptr
+    mov 0x10(%esp), %eax
+    lidt (%eax)
     ret
-
-.section .data
-.global idt_ptr
-idt_ptr:
-    .space 16

@@ -1,4 +1,4 @@
-OUTPUT_FORMAT("elf64-x86-64")
+OUTPUT_FORMAT("elf32-i386")
 ENTRY(_start)
 
 SECTIONS
@@ -26,10 +26,5 @@ SECTIONS
         *(.COMMON)
         *(.bss .bss.*)
         . = ALIGN(16);
-    }
-    
-    /DISCARD/ : {
-        *(.debug*)
-        *(.comment)
     }
 }
